@@ -6,6 +6,7 @@
 
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 
 public class Permutation {
     public static void main(String[] args) {
@@ -14,9 +15,27 @@ public class Permutation {
         if (k == 0) return; // special handling for early exit
 
         RandomizedQueue<String> rQueue = new RandomizedQueue<String>();
+
+        int counter = 0;
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
-            rQueue.enqueue(item);
+            counter++;
+            // Knuth's Algorithm for determining if we should add the next
+            // item to the array
+            if (counter > k) {
+                if (StdRandom.bernoulli((double) k / counter)) {
+                    // because dequeue shuffles array so that it removes the
+                    // last item, we don't need to replace a specific
+                    // index and can enqueue the relevant item after making
+                    // space
+                    rQueue.dequeue();
+                    rQueue.enqueue(item);
+                }
+
+            }
+            else {
+                rQueue.enqueue(item);
+            }
         }
 
         int count = 0;
