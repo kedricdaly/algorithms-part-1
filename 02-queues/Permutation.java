@@ -9,6 +9,15 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
 public class Permutation {
+
+    /**
+     * @param args the command-line arguments
+     *             * k (String): the number of items (strings) to print to console
+     *             * args[1:n] (String): the items from which to create a permutation
+     * @implNote uses Knuth's algorithm to select which elements to output without
+     * using too much memory for large n
+     * @see RandomizedQueue
+     */
     public static void main(String[] args) {
         // k is the number of items to print at most
         int k = Integer.parseInt(args[0]);
