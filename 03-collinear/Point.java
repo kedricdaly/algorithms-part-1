@@ -2,14 +2,15 @@
  *  Compilation:  javac Point.java
  *  Execution:    java Point
  *  Dependencies: none
- *  
+ *
  *  An immutable data type for points in the plane.
  *  For use on Coursera, Algorithms Part I programming assignment.
  *
  ******************************************************************************/
 
-import java.util.Comparator;
 import edu.princeton.cs.algs4.StdDraw;
+
+import java.util.Comparator;
 
 public class Point implements Comparable<Point> {
 
@@ -19,8 +20,8 @@ public class Point implements Comparable<Point> {
     /**
      * Initializes a new point.
      *
-     * @param  x the <em>x</em>-coordinate of the point
-     * @param  y the <em>y</em>-coordinate of the point
+     * @param x the <em>x</em>-coordinate of the point
+     * @param y the <em>y</em>-coordinate of the point
      */
     public Point(int x, int y) {
         /* DO NOT MODIFY */
@@ -55,11 +56,28 @@ public class Point implements Comparable<Point> {
      * Double.POSITIVE_INFINITY if the line segment is vertical;
      * and Double.NEGATIVE_INFINITY if (x0, y0) and (x1, y1) are equal.
      *
-     * @param  that the other point
+     * @param that the other point
      * @return the slope between this point and the specified point
      */
     public double slopeTo(Point that) {
-        /* YOUR CODE HERE */
+
+        // if the point is the same, return negative infinity
+        if (this.x == that.x && this.y == that.y) {
+            return Double.NEGATIVE_INFINITY;
+        }
+
+        // if the line segment is vertical (x0 == x1) return positive infinity
+        if (this.x == that.x) {
+            return Double.POSITIVE_INFINITY;
+        }
+
+        // if the line segment is horizontal (y0 == y1) return 0
+        // needed to avoid potential divide by zero issue
+        if (this.y == that.y) {
+            return 0;
+        }
+
+        return (double) (that.y - this.y) / (that.x - this.x);
     }
 
     /**
@@ -67,15 +85,16 @@ public class Point implements Comparable<Point> {
      * Formally, the invoking point (x0, y0) is less than the argument point
      * (x1, y1) if and only if either y0 < y1 or if y0 = y1 and x0 < x1.
      *
-     * @param  that the other point
+     * @param that the other point
      * @return the value <tt>0</tt> if this point is equal to the argument
-     *         point (x0 = x1 and y0 = y1);
-     *         a negative integer if this point is less than the argument
-     *         point; and a positive integer if this point is greater than the
-     *         argument point
+     * point (x0 = x1 and y0 = y1);
+     * a negative integer if this point is less than the argument
+     * point; and a positive integer if this point is greater than the
+     * argument point
      */
     public int compareTo(Point that) {
-        /* YOUR CODE HERE */
+        // TODO: implement function
+        return 0;
     }
 
     /**
@@ -85,7 +104,11 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
-        /* YOUR CODE HERE */
+        return new Comparator<Point>() {
+            public int compare(Point p1, Point p2) {
+                return Double.compare(slopeTo(p1), slopeTo(p2));
+            }
+        };
     }
 
 
@@ -105,6 +128,24 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
-        /* YOUR CODE HERE */
+        Point origin = new Point(0, 0);
+        Point vert1 = new Point(0, 1);
+        Point origin2 = new Point(0, 0);
+        Point horiz1 = new Point(1, 0);
+        Point boxCorner = new Point(1, 1);
+        Point p12 = new Point(1, 2);
+        Point p21 = new Point(2, 1);
+
+        // check slopeTo method
+        System.out.println(
+                "(0,0) (0,0)\tNegative Inf: " + origin.slopeTo(origin2)); // negative infinity
+        System.out.println(
+                "(0,0) (0,1)\tPositive Inf: " + origin.slopeTo(vert1)); // positive infinity
+        System.out.println("(0,0) (1,0)\t0: " + origin.slopeTo(horiz1)); // zero
+        System.out.println("(0,1) (1,1)\t0: " + vert1.slopeTo(boxCorner)); // zero
+        System.out.println("(0,0) (1,1)\t1: " + origin.slopeTo(boxCorner)); // 1
+        System.out.println("(0,0) (1,2)\t2: " + origin.slopeTo(p12)); // 2
+        System.out.println("(0,0) (2,1)\t0.5: " + origin.slopeTo(p21)); // 0.5
     }
+
 }
