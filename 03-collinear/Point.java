@@ -93,8 +93,15 @@ public class Point implements Comparable<Point> {
      * argument point
      */
     public int compareTo(Point that) {
-        // TODO: implement function
-        return 0;
+        if (this.x == that.x && this.y == that.y) {
+            return 0;
+        }
+
+        if (this.y == that.y) {
+            return (this.x - that.x); // negative int if this.x < that.x (and y0 == y1)
+        }
+
+        return (this.y - that.y); // negative int if this.y < that.y
     }
 
     /**
@@ -128,6 +135,14 @@ public class Point implements Comparable<Point> {
      * Unit tests the Point data type.
      */
     public static void main(String[] args) {
+        testSlopeTo();
+        testCompareTo();
+    }
+
+    private static void testSlopeTo() {
+
+        System.out.println("Test slopeTo()");
+
         Point origin = new Point(0, 0);
         Point vert1 = new Point(0, 1);
         Point origin2 = new Point(0, 0);
@@ -138,14 +153,35 @@ public class Point implements Comparable<Point> {
 
         // check slopeTo method
         System.out.println(
-                "(0,0) (0,0)\tNegative Inf: " + origin.slopeTo(origin2)); // negative infinity
+                "(0,0) (0,0)\tNegative Inf: " + origin.slopeTo(origin2));
         System.out.println(
-                "(0,0) (0,1)\tPositive Inf: " + origin.slopeTo(vert1)); // positive infinity
-        System.out.println("(0,0) (1,0)\t0: " + origin.slopeTo(horiz1)); // zero
-        System.out.println("(0,1) (1,1)\t0: " + vert1.slopeTo(boxCorner)); // zero
-        System.out.println("(0,0) (1,1)\t1: " + origin.slopeTo(boxCorner)); // 1
-        System.out.println("(0,0) (1,2)\t2: " + origin.slopeTo(p12)); // 2
-        System.out.println("(0,0) (2,1)\t0.5: " + origin.slopeTo(p21)); // 0.5
+                "(0,0) (0,1)\tPositive Inf: " + origin.slopeTo(vert1));
+        System.out.println("(0,0) (1,0)\t0: " + origin.slopeTo(horiz1));
+        System.out.println("(0,1) (1,1)\t0: " + vert1.slopeTo(boxCorner));
+        System.out.println("(0,0) (1,1)\t1: " + origin.slopeTo(boxCorner));
+        System.out.println("(0,0) (1,2)\t2: " + origin.slopeTo(p12));
+        System.out.println("(0,0) (2,1)\t0.5: " + origin.slopeTo(p21));
     }
 
+    private static void testCompareTo() {
+        System.out.println("Test compareTo()");
+
+        Point origin = new Point(0, 0);
+        Point vert1 = new Point(0, 1);
+        Point origin2 = new Point(0, 0);
+        Point horiz1 = new Point(1, 0);
+        Point boxCorner = new Point(1, 1);
+        Point p12 = new Point(1, 2);
+        Point p21 = new Point(2, 1);
+
+        System.out.println(
+                "(0,0) (0,0)\t0: " + origin.compareTo(origin2));
+        System.out.println(
+                "(0,0) (0,1)\t-1: " + origin.compareTo(vert1));
+        System.out.println("(0,0) (1,0)\t-1: " + origin.compareTo(horiz1));
+        System.out.println("(0,1) (1,1)\t-1: " + vert1.compareTo(boxCorner));
+        System.out.println("(0,0) (1,1)\t-1: " + origin.compareTo(boxCorner));
+        System.out.println("(0,0) (1,2)\t-2: " + origin.compareTo(p12));
+        System.out.println("(0,0) (2,1)\t-1: " + origin.compareTo(p21));
+    }
 }
