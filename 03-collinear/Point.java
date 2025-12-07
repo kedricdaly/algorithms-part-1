@@ -67,12 +67,12 @@ public class Point implements Comparable<Point> {
         }
 
         // if the line segment is vertical (x0 == x1) return positive infinity
+        // needed to avoid potential divide by zero issue
         if (this.x == that.x) {
             return Double.POSITIVE_INFINITY;
         }
 
         // if the line segment is horizontal (y0 == y1) return 0
-        // needed to avoid potential divide by zero issue
         if (this.y == that.y) {
             return 0;
         }
@@ -111,11 +111,17 @@ public class Point implements Comparable<Point> {
      * @return the Comparator that defines this ordering on points
      */
     public Comparator<Point> slopeOrder() {
-        return new Comparator<Point>() {
-            public int compare(Point p1, Point p2) {
-                return Double.compare(slopeTo(p1), slopeTo(p2));
-            }
-        };
+        // return new Comparator<Point>() {
+        //
+        //     @Override
+        //     public int compare(Point p, Point q) {
+        //         if (Double.compare(slopeTo(p), slopeTo(q)) == 0) {
+        //             return p.compareTo(q);
+        //         }
+        //         return Double.compare(slopeTo(p), slopeTo(q));
+        //     }
+        // };
+        return (p1, p2) -> Double.compare(slopeTo(p1), slopeTo(p2)); // old version
     }
 
 
@@ -161,6 +167,7 @@ public class Point implements Comparable<Point> {
         System.out.println("(0,0) (1,1)\t1: " + origin.slopeTo(boxCorner));
         System.out.println("(0,0) (1,2)\t2: " + origin.slopeTo(p12));
         System.out.println("(0,0) (2,1)\t0.5: " + origin.slopeTo(p21));
+        System.out.println("(2,1) (0,0)\t-0.5: " + p21.slopeTo(origin));
     }
 
     private static void testCompareTo() {
@@ -183,5 +190,6 @@ public class Point implements Comparable<Point> {
         System.out.println("(0,0) (1,1)\t-1: " + origin.compareTo(boxCorner));
         System.out.println("(0,0) (1,2)\t-2: " + origin.compareTo(p12));
         System.out.println("(0,0) (2,1)\t-1: " + origin.compareTo(p21));
+        System.out.println("(2,1) (0,0)\t 1: " + p21.compareTo(origin));
     }
 }
