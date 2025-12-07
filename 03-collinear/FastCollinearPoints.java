@@ -21,7 +21,7 @@ public class FastCollinearPoints {
         // check inputs
         locPoints = checkInputs(points);
         Point[] locPointsBak = locPoints.clone();
-        Arrays.sort(locPointsBak); // natural order sort
+        // Arrays.sort(locPointsBak); // natural order sort - already sorted in checkInputs()
 
         // for each point p, treat it as the origin
         // find the slope to each other point q
@@ -34,6 +34,7 @@ public class FastCollinearPoints {
         outerLoop:
         for (int i = 0; i < locPoints.length; i++) {
             Point p = locPointsBak[i];
+            // locPoints = locPointsBak.clone(); // reset to natural order
             Arrays.sort(locPoints, p.slopeOrder()); // places p at position 0
             int nCollinearPoints = 2; // start at 2 because initial comparison is 2 points
             int start = 0;
@@ -48,7 +49,7 @@ public class FastCollinearPoints {
                     start = j - nCollinearPoints + 2;
                     // if start of a line segment is near the end of slopeOrder, cannot have 4
                     // collinear points
-                    if (start > locPoints.length - 2) {
+                    if (start >= locPoints.length - 2) {
                         continue;
                     }
                     // System.out.println("Start of subarray: " + start);
@@ -63,7 +64,10 @@ public class FastCollinearPoints {
                         //         ": " + p.compareTo(
                         //                 locPoints[start]));
                         if (p.compareTo(locPoints[start]) > 0) {
-                            continue outerLoop; // will not be a min/max line segment
+                            // continue outerLoop; // will not be a min/max line segment
+                            nCollinearPoints = 2;
+                            continue; // will not be a min/max line segment, but could be for a later segment
+                            // e.g. if it is the end of one segment, but beginning of another
                         }
                         LineSegment thisSegment = new LineSegment(p, locPoints[j]);
                         segmentArray.add(thisSegment);
@@ -77,7 +81,7 @@ public class FastCollinearPoints {
                         // System.out.println(
                         //         ": " + p.compareTo(
                         //                 locPoints[start]));
-                        if (p.compareTo(locPoints[start]) > 0) {
+                        if (p.compareTo(locPoints[start]) > 0 && segmentArray.size() >= 1) {
                             // if true, mistakenly added segment too early and need to remove
                             segmentArray.remove(segmentArray.size() - 1);
                             continue; // will not be a min/max line segment
@@ -108,7 +112,7 @@ public class FastCollinearPoints {
             if (point == null) throw new IllegalArgumentException("A point in the input is null");
         }
 
-        Arrays.sort(locPoints);
+        Arrays.sort(locPoints); // natural order sort
 
         // check for duplicates
         for (int i = 1; i < points.length; i++) {
