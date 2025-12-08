@@ -20,8 +20,7 @@ public class FastCollinearPoints {
     public FastCollinearPoints(Point[] points) {
         // check inputs
         locPoints = checkInputs(points);
-        Point[] locPointsBak = locPoints.clone();
-        // Arrays.sort(locPointsBak); // natural order sort - already sorted in checkInputs()
+        Point[] locPointsBak = locPoints.clone(); // natural order clone
 
         // for each point p, treat it as the origin
         // find the slope to each other point q
@@ -31,40 +30,54 @@ public class FastCollinearPoints {
         // get the maximal segment
         ArrayList<LineSegment> segmentArray = new ArrayList<LineSegment>();
 
+        // note: for the following loop, "p" is the origin point
+        // other references to points Q, R, S should be imagined as P -> Q -> R -> S
+        // The goal of these loops are to look at every point R and compare the slopes to
+        // the previous point and, if applicable, the next point. If the slopes from P to any other
+        // points are the same, they are collinear. if slopePQ != slopePR, we continue the loop
+        // and if slopePR == slopePS, we continue the loop (and increment the collinear point
+        // counter) because there will be a longer line segment.
+        //
+        // Additionally, for a given set of 4+ collinear points, we sort the sub-array using the
+        // natural order. If P > Q, then the segment is a repeat of the ordered segment
+        // For example, if we imagine a set of collinear points A -> B -> C -> D, A < B < C < D.
+        // Therefore, we can compare the origin point (P, above) to the start of the collinear
+        // sub-array. Only A should pass this logical test, so that we only add the segment once.
+        // E.g. if we are looping and have B as the origin so we get B -> A -> C -> D as the set of
+        // origin + collinear sub-array, we would not add this because B > A. Instead the segment
+        // gets added when A is treated as the origin.
         outerLoop:
         for (int i = 0; i < locPoints.length; i++) {
             Point p = locPointsBak[i];
-            // locPoints = locPointsBak.clone(); // reset to natural order
             Arrays.sort(locPoints, p.slopeOrder()); // places p at position 0
             int nCollinearPoints = 2; // start at 2 because initial comparison is 2 points
-            int start = 0;
-            int end = 0;
+
             for (int j = 1; j < locPoints.length; j++) {
-                // Point q = locPoints[j];
-                double currentTestSlope = p.slopeTo(locPoints[j - 1]);
-                double slopePQ = p.slopeTo(locPoints[j]);
-                if (Double.compare(currentTestSlope, slopePQ) == 0) {
+                double slopePQ = p.slopeTo(locPoints[j - 1]);
+                double slopePR = p.slopeTo(locPoints[j]);
+
+                if (Double.compare(slopePQ, slopePR) == 0) {
 
                     nCollinearPoints++;
-                    start = j - nCollinearPoints + 2;
+                    int start = j - nCollinearPoints + 2;
+
+                    // check if there will be a longer line segment
+                    if (j < locPoints.length - 1) {
+                        double slopePS = p.slopeTo(locPoints[j + 1]);
+                        if (Double.compare(slopePR, slopePS) == 0) {
+                            continue; // there will be a longer line segment
+                        }
+                    }
                     // if start of a line segment is near the end of slopeOrder, cannot have 4
                     // collinear points
                     if (start >= locPoints.length - 2) {
-                        continue;
+                        continue outerLoop;
                     }
-                    // System.out.println("Start of subarray: " + start);
 
-
-                    if (nCollinearPoints == 4) {
-                        end = j;
-                        Arrays.sort(locPoints, start, end + 1);
-                        // System.out.print(
-                        //         "Comparing " + p.toString() + " to " + locPoints[start].toString());
-                        // System.out.println(
-                        //         ": " + p.compareTo(
-                        //                 locPoints[start]));
+                    if (nCollinearPoints >= 4) {
+                        // sort sub-array and check if we have the correct origin for a segment
+                        Arrays.sort(locPoints, start, j + 1);
                         if (p.compareTo(locPoints[start]) > 0) {
-                            // continue outerLoop; // will not be a min/max line segment
                             nCollinearPoints = 2;
                             continue; // will not be a min/max line segment, but could be for a later segment
                             // e.g. if it is the end of one segment, but beginning of another
@@ -72,27 +85,9 @@ public class FastCollinearPoints {
                         LineSegment thisSegment = new LineSegment(p, locPoints[j]);
                         segmentArray.add(thisSegment);
                     }
-                    else if (nCollinearPoints > 4) {
-                        end = j;
-                        Arrays.sort(locPoints, start, end + 1);
-                        // System.out.print(
-                        //         " >4 Comparing " + p.toString() + " to "
-                        //                 + locPoints[start].toString());
-                        // System.out.println(
-                        //         ": " + p.compareTo(
-                        //                 locPoints[start]));
-                        if (p.compareTo(locPoints[start]) > 0 && segmentArray.size() >= 1) {
-                            // if true, mistakenly added segment too early and need to remove
-                            segmentArray.remove(segmentArray.size() - 1);
-                            continue; // will not be a min/max line segment
-                        }
-                        LineSegment thisSegment = new LineSegment(p, locPoints[j]);
-                        segmentArray.set(segmentArray.size() - 1, thisSegment); // replace
-                    }
                 }
                 else {
                     nCollinearPoints = 2;
-                    start = j;
                 }
             }
         }
