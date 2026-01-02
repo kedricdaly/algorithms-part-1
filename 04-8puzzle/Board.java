@@ -74,10 +74,21 @@ public class Board {
         return manhattanDistance;
     }
 
-    /*
-    // is this board the goal board?
-    public boolean isGoal()
 
+    // is this board the goal board?
+    public boolean isGoal() {
+        int position = 0;
+        for (int i = 0; i < this.n; i++) {
+            for (int j = 0; j < this.n; j++) {
+                if (tiles[i][j] != position + 1 && tiles[i][j] != 0) {
+                    return false;
+                }
+                position++;
+            }
+        }
+        return true;
+    }
+    /*
     // does this board equal y?
     public boolean equals(Object y)
 
@@ -96,9 +107,13 @@ public class Board {
         Board testBoard = new Board(testTiles);
         StdOut.println(testBoard.toString());
         StdOut.println("Dimension: " + testBoard.dimension());
+        StdOut.println("Test isGoal(), size 2 (target true):" + testBoard.isGoal());
 
         StdOut.println("Test Distances");
         testDistances();
+
+        StdOut.println("Test isGoal");
+        testIsGoal();
 
         // StdOut.println("Test 1D-2D conversions");
         // testConversions();
@@ -111,6 +126,16 @@ public class Board {
         StdOut.println(testDistances.toString());
         StdOut.println("Hamming Dist (target = 5): " + testDistances.hamming());
         StdOut.println("Manhattan Dist (target = 10): " + testDistances.manhattan());
+    }
+
+    public static void testIsGoal() {
+        int[][] testGoalTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
+        Board testGoalBad = new Board(testGoalTiles);
+        StdOut.println("Test isGoal(), size 3 (target false):" + testGoalBad.isGoal());
+
+        int[][] testGoalGoodTiles = new int[][] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
+        Board testGoalGood = new Board(testGoalGoodTiles);
+        StdOut.println("Test isGoal(), size 3 (target true):" + testGoalGood.isGoal());
     }
 
     // 3, 3 should return 9
