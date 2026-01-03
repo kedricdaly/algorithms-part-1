@@ -4,6 +4,7 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Arrays;
@@ -12,12 +13,14 @@ public class Board {
 
     private int[][] tiles;
     private int n; // single dimension
+    private int[] emptyLoc = new int[2];
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         this.tiles = tiles;
         this.n = tiles.length;
+        this.emptyLoc = findEmptyLocation(this.tiles);
     }
 
     // string representation of this board
@@ -99,10 +102,89 @@ public class Board {
         return Arrays.deepEquals(this.tiles, checkBoard.tiles);
     }
 
-    /*
-    // all neighboring boards
-    public Iterable<Board> neighbors()
 
+    // all neighboring boards
+    public Iterable<Board> neighbors() {
+        // overall approach:
+        // 1. find the empty board spot (can this be cached?)
+        // 2. check the neighboring spots. If there is a tile there, exchange and return
+        //    if the swap would go outside the board boundaries, ignore.
+        int emptyRow = this.emptyLoc[0];
+        int emptyCol = this.emptyLoc[1];
+
+        int left = emptyCol - 1;
+        int right = emptyCol + 1;
+        int up = emptyRow - 1;
+        int down = emptyRow + 1;
+
+        Queue<Board> neighbors = new Queue<Board>();
+
+        // likely a way to not copy this code for the 4 possibilities
+        // could create 4 int[2] pairs for different possibilities in a new array
+        // and then only keep valid ones and loop over the valid entries.
+        if (left >= 0 && left < this.n) {
+            int swapTileVal = this.tiles[emptyRow][left];
+            // need to copy the nxn array into a new one so that manipulations
+            // do not change the underlying object data
+            // if try to use this.tiles, manipulations on the new Board tiles
+            // changes the original data.
+            int[][] tempTiles = new int[this.n][this.n];
+            for (int i = 0; i < this.n; i++) {
+                for (int j = 0; j < this.n; j++) {
+                    tempTiles[i][j] = this.tiles[i][j];
+                }
+            }
+            Board tempBoard = new Board(tempTiles);
+            tempBoard.tiles[emptyRow][left] = 0;
+            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
+            neighbors.enqueue(tempBoard);
+        }
+
+        if (right >= 0 && right < this.n) {
+            int swapTileVal = this.tiles[emptyRow][right];
+            int[][] tempTiles = new int[this.n][this.n];
+            for (int i = 0; i < this.n; i++) {
+                for (int j = 0; j < this.n; j++) {
+                    tempTiles[i][j] = this.tiles[i][j];
+                }
+            }
+            Board tempBoard = new Board(tempTiles);
+            tempBoard.tiles[emptyRow][right] = 0;
+            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
+            neighbors.enqueue(tempBoard);
+        }
+
+        if (up >= 0 && up < this.n) {
+            int swapTileVal = this.tiles[up][emptyCol];
+            int[][] tempTiles = new int[this.n][this.n];
+            for (int i = 0; i < this.n; i++) {
+                for (int j = 0; j < this.n; j++) {
+                    tempTiles[i][j] = this.tiles[i][j];
+                }
+            }
+            Board tempBoard = new Board(tempTiles);
+            tempBoard.tiles[up][emptyCol] = 0;
+            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
+            neighbors.enqueue(tempBoard);
+        }
+
+        if (down >= 0 && down < this.n) {
+            int swapTileVal = this.tiles[down][emptyCol];
+            int[][] tempTiles = new int[this.n][this.n];
+            for (int i = 0; i < this.n; i++) {
+                for (int j = 0; j < this.n; j++) {
+                    tempTiles[i][j] = this.tiles[i][j];
+                }
+            }
+            Board tempBoard = new Board(tempTiles);
+            tempBoard.tiles[down][emptyCol] = 0;
+            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
+            neighbors.enqueue(tempBoard);
+        }
+        return neighbors;
+    }
+
+    /*
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
 
@@ -117,14 +199,17 @@ public class Board {
         StdOut.println("Dimension: " + testBoard.dimension());
         StdOut.println("Test isGoal(), size 2 (target true):" + testBoard.isGoal());
 
-        StdOut.println("Test Distances");
-        testDistances();
+        // StdOut.println("Test Distances");
+        // testDistances();
 
-        StdOut.println("Test isGoal()");
-        testIsGoal();
+        // StdOut.println("Test isGoal()");
+        // testIsGoal();
 
-        StdOut.println("Test equals()");
-        testEquals();
+        // StdOut.println("Test equals()");
+        // testEquals();
+
+        StdOut.println("Test neighbors");
+        testNeighbors();
 
         // StdOut.println("Test 1D-2D conversions");
         // testConversions();
@@ -164,6 +249,20 @@ public class Board {
         return position % dim;
     }
 
+    // find the empty spot on the board
+    private int[] findEmptyLocation(int[][] boardTiles) {
+        int[] emptyLocation = new int[2];
+        for (int i = 0; i < this.n; i++) {
+            for (int j = 0; j < this.n; j++) {
+                if (boardTiles[i][j] == 0) {
+                    emptyLocation[0] = i;
+                    emptyLocation[1] = j;
+                }
+            }
+        }
+        return emptyLocation;
+    }
+
     private static void testConversions() {
         int[][] testConversionsTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
         Board testConversions = new Board(testConversionsTiles);
@@ -198,6 +297,40 @@ public class Board {
                         testNonEqualBoard));
         StdOut.println("\tCheck null (target: false): " + testEqualsBoard.equals(null));
         StdOut.println("\tCheck non-Board object (target: false): " + testEqualsBoard.equals(1));
+    }
+
+    private static void testNeighbors() {
+        int[][] testOrigTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
+        int[][] testLeftTiles = new int[][] { { 8, 1, 3 }, { 0, 4, 2 }, { 7, 6, 5 } };
+        int[][] testRightTiles = new int[][] { { 8, 1, 3 }, { 4, 2, 0 }, { 7, 6, 5 } };
+        int[][] testUpTiles = new int[][] { { 8, 0, 3 }, { 4, 1, 2 }, { 7, 6, 5 } };
+        int[][] testDownTiles = new int[][] { { 8, 1, 3 }, { 4, 6, 2 }, { 7, 0, 5 } };
+        Board orig = new Board(testOrigTiles);
+        Board left = new Board(testLeftTiles);
+        Board right = new Board(testRightTiles);
+        Board up = new Board(testUpTiles);
+        Board down = new Board(testDownTiles);
+        Iterable<Board> neighbors = orig.neighbors();
+
+        StdOut.println("Original Board:");
+        StdOut.println(orig.toString());
+
+        for (Board b : neighbors) {
+            StdOut.println(b.toString());
+            if (b.equals(left)) {
+                StdOut.println("Matches left\n");
+            }
+            if (b.equals(right)) {
+                StdOut.println("Matches right\n");
+            }
+            if (b.equals(up)) {
+                StdOut.println("Matches up\n");
+            }
+            if (b.equals(down)) {
+                StdOut.println("Matches down\n");
+            }
+        }
+
     }
 
 }
