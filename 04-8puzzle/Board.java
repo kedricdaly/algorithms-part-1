@@ -6,6 +6,8 @@
 
 import edu.princeton.cs.algs4.StdOut;
 
+import java.util.Arrays;
+
 public class Board {
 
     private int[][] tiles;
@@ -88,10 +90,16 @@ public class Board {
         }
         return true;
     }
-    /*
-    // does this board equal y?
-    public boolean equals(Object y)
 
+    // does this board equal y?
+    public boolean equals(Object y) {
+        if (y == null) return false;
+        if (y.getClass() != this.getClass()) return false;
+        Board checkBoard = (Board) y;
+        return Arrays.deepEquals(this.tiles, checkBoard.tiles);
+    }
+
+    /*
     // all neighboring boards
     public Iterable<Board> neighbors()
 
@@ -112,8 +120,11 @@ public class Board {
         StdOut.println("Test Distances");
         testDistances();
 
-        StdOut.println("Test isGoal");
+        StdOut.println("Test isGoal()");
         testIsGoal();
+
+        StdOut.println("Test equals()");
+        testEquals();
 
         // StdOut.println("Test 1D-2D conversions");
         // testConversions();
@@ -124,18 +135,18 @@ public class Board {
         int[][] testDistancesTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
         Board testDistances = new Board(testDistancesTiles);
         StdOut.println(testDistances.toString());
-        StdOut.println("Hamming Dist (target = 5): " + testDistances.hamming());
-        StdOut.println("Manhattan Dist (target = 10): " + testDistances.manhattan());
+        StdOut.println("\tHamming Dist (target = 5): " + testDistances.hamming());
+        StdOut.println("\tManhattan Dist (target = 10): " + testDistances.manhattan());
     }
 
     public static void testIsGoal() {
         int[][] testGoalTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
         Board testGoalBad = new Board(testGoalTiles);
-        StdOut.println("Test isGoal(), size 3 (target false):" + testGoalBad.isGoal());
+        StdOut.println("\tTest isGoal(), size 3 (target false): " + testGoalBad.isGoal());
 
         int[][] testGoalGoodTiles = new int[][] { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
         Board testGoalGood = new Board(testGoalGoodTiles);
-        StdOut.println("Test isGoal(), size 3 (target true):" + testGoalGood.isGoal());
+        StdOut.println("\tTest isGoal(), size 3 (target true): " + testGoalGood.isGoal());
     }
 
     // 3, 3 should return 9
@@ -170,6 +181,23 @@ public class Board {
         StdOut.println("3 -> col 0: " + (colFrom1D(3, dim) == 0));
         StdOut.println("4 -> col 1: " + (colFrom1D(4, dim) == 1));
         StdOut.println("8 -> col 2: " + (colFrom1D(8, dim) == 2));
+    }
+
+    private static void testEquals() {
+        int[][] testEqualsTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
+        int[][] testNonEqualsTiles = new int[][] { { 1, 8, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
+        Board testEqualsBoard = new Board(testEqualsTiles);
+        Board testEqualsBoard2 = new Board(testEqualsTiles);
+        Board testNonEqualBoard = new Board(testNonEqualsTiles);
+        StdOut.println("\tCheck same board equality (target: true): " + testEqualsBoard.equals(
+                testEqualsBoard));
+        StdOut.println("\tCheck duplicate board equality (target: true): " + testEqualsBoard.equals(
+                testEqualsBoard2));
+        StdOut.println(
+                "\tCheck non-duplicate board equality (target: false): " + testEqualsBoard.equals(
+                        testNonEqualBoard));
+        StdOut.println("\tCheck null (target: false): " + testEqualsBoard.equals(null));
+        StdOut.println("\tCheck non-Board object (target: false): " + testEqualsBoard.equals(1));
     }
 
 }
