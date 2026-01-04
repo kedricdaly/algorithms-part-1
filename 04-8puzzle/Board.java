@@ -272,7 +272,7 @@ public class Board {
         StdOut.println("\tManhattan Dist (target = 10): " + testDistances.manhattan());
     }
 
-    public static void testIsGoal() {
+    private static void testIsGoal() {
         int[][] testGoalTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
         Board testGoalBad = new Board(testGoalTiles);
         StdOut.println("\tTest isGoal(), size 3 (target false): " + testGoalBad.isGoal());
