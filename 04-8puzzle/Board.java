@@ -184,12 +184,53 @@ public class Board {
         return neighbors;
     }
 
-    /*
+
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
+        // 1. find a non-zero element
+        // 2. find another non-zero element
+        // 3. exchange them
 
+        // we need to loop through the int array to copy the data or else
+        // data manipulations will change the original data
+        int[] swap1 = new int[2];
+        int[] swap2 = new int[2];
+        boolean swap1Set = false;
+        boolean swap2Set = false;
+        int[][] newTiles = new int[this.n][this.n];
+        for (int i = 0; i < this.n; i++) {
+            for (int j = 0; j < this.n; j++) {
+                newTiles[i][j] = this.tiles[i][j];
+                // save non-zero positions
+                // need this order to ensure swap1 != swap2
+                if (!swap2Set && swap1Set && this.tiles[i][j] != 0) {
+                    swap2[0] = i;
+                    swap2[1] = j;
+                    swap2Set = true;
+                }
+                if (!swap1Set && this.tiles[i][j] != 0) {
+                    swap1[0] = i;
+                    swap1[1] = j;
+                    swap1Set = true;
+                }
+            }
+        }
+
+        // exchange
+        if (swap1Set && swap2Set) {
+            int tempVal = newTiles[swap1[0]][swap1[1]];
+            newTiles[swap1[0]][swap1[1]] = newTiles[swap2[0]][swap2[1]];
+            newTiles[swap2[0]][swap2[1]] = tempVal;
+        }
+        else {
+            throw new RuntimeException("Could not find non-zero tiles for twin swap.");
+        }
+
+        Board newBoard = new Board(newTiles);
+
+        return newBoard;
     }
-    */
+
 
     // unit testing (not graded)
     public static void main(String[] args) {
@@ -210,6 +251,9 @@ public class Board {
 
         StdOut.println("Test neighbors");
         testNeighbors();
+
+        StdOut.println("Test twin");
+        testTwin();
 
         // StdOut.println("Test 1D-2D conversions");
         // testConversions();
@@ -330,6 +374,27 @@ public class Board {
                 StdOut.println("Matches down\n");
             }
         }
+
+    }
+
+    private static void testTwin() {
+        int[][] testOrigTiles = new int[][] { { 8, 1, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
+        int[][] testTwin = new int[][] { { 1, 8, 3 }, { 4, 0, 2 }, { 7, 6, 5 } };
+
+        Board orig = new Board(testOrigTiles);
+        Board twin = new Board(testTwin);
+
+        Board test = orig.twin();
+        StdOut.println("Original:");
+        StdOut.println(orig.toString());
+
+        StdOut.println("Expected twin:");
+        StdOut.println(twin.toString());
+
+        StdOut.println("Created twin:");
+        StdOut.println(test.toString());
+
+        StdOut.println("Does twin match? (target: true): " + twin.equals(test));
 
     }
 
