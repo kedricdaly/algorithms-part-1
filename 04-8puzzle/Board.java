@@ -134,9 +134,10 @@ public class Board {
                     tempTiles[i][j] = this.tiles[i][j];
                 }
             }
+
+            tempTiles[emptyRow][left] = 0;
+            tempTiles[emptyRow][emptyCol] = swapTileVal;
             Board tempBoard = new Board(tempTiles);
-            tempBoard.tiles[emptyRow][left] = 0;
-            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
             neighbors.enqueue(tempBoard);
         }
 
@@ -148,9 +149,10 @@ public class Board {
                     tempTiles[i][j] = this.tiles[i][j];
                 }
             }
+
+            tempTiles[emptyRow][right] = 0;
+            tempTiles[emptyRow][emptyCol] = swapTileVal;
             Board tempBoard = new Board(tempTiles);
-            tempBoard.tiles[emptyRow][right] = 0;
-            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
             neighbors.enqueue(tempBoard);
         }
 
@@ -162,9 +164,10 @@ public class Board {
                     tempTiles[i][j] = this.tiles[i][j];
                 }
             }
+
+            tempTiles[up][emptyCol] = 0;
+            tempTiles[emptyRow][emptyCol] = swapTileVal;
             Board tempBoard = new Board(tempTiles);
-            tempBoard.tiles[up][emptyCol] = 0;
-            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
             neighbors.enqueue(tempBoard);
         }
 
@@ -176,9 +179,10 @@ public class Board {
                     tempTiles[i][j] = this.tiles[i][j];
                 }
             }
+
+            tempTiles[down][emptyCol] = 0;
+            tempTiles[emptyRow][emptyCol] = swapTileVal;
             Board tempBoard = new Board(tempTiles);
-            tempBoard.tiles[down][emptyCol] = 0;
-            tempBoard.tiles[emptyRow][emptyCol] = swapTileVal;
             neighbors.enqueue(tempBoard);
         }
         return neighbors;
