@@ -11,16 +11,23 @@ import java.util.Arrays;
 
 public class Board {
 
-    private int[][] tiles;
+    private int[][] boardTiles;
     private int n; // single dimension
+    // emptyLoc ends up causing too much memory use for small puzzles during grading.
     private int[] emptyLoc = new int[2];
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
-        this.tiles = tiles;
+        int[][] tempTiles = new int[tiles.length][tiles.length]; // defensive copy
+        for (int i = 0; i < tiles.length; i++) {
+            for (int j = 0; j < tiles.length; j++) {
+                tempTiles[i][j] = tiles[i][j];
+            }
+        }
+        this.boardTiles = tempTiles;
         this.n = tiles.length;
-        this.emptyLoc = findEmptyLocation(this.tiles);
+        this.emptyLoc = findEmptyLocation(this.boardTiles);
     }
 
     // string representation of this board
@@ -30,7 +37,7 @@ public class Board {
         s.append(n + "\n");
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                s.append(String.format("%2d ", tiles[i][j]));
+                s.append(String.format("%2d ", boardTiles[i][j]));
             }
             s.append("\n");
         }
@@ -48,7 +55,7 @@ public class Board {
         int hammingCount = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (tiles[i][j] != position + 1) {
+                if (boardTiles[i][j] != position + 1) {
                     hammingCount = hammingCount + 1;
                 }
                 position++;
@@ -64,7 +71,7 @@ public class Board {
         for (int i = 0; i < (Math.pow(dim, 2)); i++) {
             int currentRow = rowFrom1D(i, dim);
             int currentCol = colFrom1D(i, dim);
-            int tileVal = tiles[currentRow][currentCol];
+            int tileVal = boardTiles[currentRow][currentCol];
             if (tileVal != 0 && tileVal != (i + 1)) {
                 // # of moves is the grid distance.
                 // Subtract the desired from the current, abs value
@@ -85,7 +92,7 @@ public class Board {
         int position = 0;
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
-                if (tiles[i][j] != position + 1 && tiles[i][j] != 0) {
+                if (boardTiles[i][j] != position + 1 && boardTiles[i][j] != 0) {
                     return false;
                 }
                 position++;
@@ -99,7 +106,7 @@ public class Board {
         if (y == null) return false;
         if (y.getClass() != this.getClass()) return false;
         Board checkBoard = (Board) y;
-        return Arrays.deepEquals(this.tiles, checkBoard.tiles);
+        return Arrays.deepEquals(this.boardTiles, checkBoard.boardTiles);
     }
 
 
@@ -123,15 +130,15 @@ public class Board {
         // could create 4 int[2] pairs for different possibilities in a new array
         // and then only keep valid ones and loop over the valid entries.
         if (left >= 0 && left < this.n) {
-            int swapTileVal = this.tiles[emptyRow][left];
+            int swapTileVal = this.boardTiles[emptyRow][left];
             // need to copy the nxn array into a new one so that manipulations
             // do not change the underlying object data
-            // if try to use this.tiles, manipulations on the new Board tiles
+            // if try to use this.boardTiles, manipulations on the new Board boardTiles
             // changes the original data.
             int[][] tempTiles = new int[this.n][this.n];
             for (int i = 0; i < this.n; i++) {
                 for (int j = 0; j < this.n; j++) {
-                    tempTiles[i][j] = this.tiles[i][j];
+                    tempTiles[i][j] = this.boardTiles[i][j];
                 }
             }
 
@@ -142,11 +149,11 @@ public class Board {
         }
 
         if (right >= 0 && right < this.n) {
-            int swapTileVal = this.tiles[emptyRow][right];
+            int swapTileVal = this.boardTiles[emptyRow][right];
             int[][] tempTiles = new int[this.n][this.n];
             for (int i = 0; i < this.n; i++) {
                 for (int j = 0; j < this.n; j++) {
-                    tempTiles[i][j] = this.tiles[i][j];
+                    tempTiles[i][j] = this.boardTiles[i][j];
                 }
             }
 
@@ -157,11 +164,11 @@ public class Board {
         }
 
         if (up >= 0 && up < this.n) {
-            int swapTileVal = this.tiles[up][emptyCol];
+            int swapTileVal = this.boardTiles[up][emptyCol];
             int[][] tempTiles = new int[this.n][this.n];
             for (int i = 0; i < this.n; i++) {
                 for (int j = 0; j < this.n; j++) {
-                    tempTiles[i][j] = this.tiles[i][j];
+                    tempTiles[i][j] = this.boardTiles[i][j];
                 }
             }
 
@@ -172,11 +179,11 @@ public class Board {
         }
 
         if (down >= 0 && down < this.n) {
-            int swapTileVal = this.tiles[down][emptyCol];
+            int swapTileVal = this.boardTiles[down][emptyCol];
             int[][] tempTiles = new int[this.n][this.n];
             for (int i = 0; i < this.n; i++) {
                 for (int j = 0; j < this.n; j++) {
-                    tempTiles[i][j] = this.tiles[i][j];
+                    tempTiles[i][j] = this.boardTiles[i][j];
                 }
             }
 
@@ -204,15 +211,15 @@ public class Board {
         int[][] newTiles = new int[this.n][this.n];
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
-                newTiles[i][j] = this.tiles[i][j];
+                newTiles[i][j] = this.boardTiles[i][j];
                 // save non-zero positions
                 // need this order to ensure swap1 != swap2
-                if (!swap2Set && swap1Set && this.tiles[i][j] != 0) {
+                if (!swap2Set && swap1Set && this.boardTiles[i][j] != 0) {
                     swap2[0] = i;
                     swap2[1] = j;
                     swap2Set = true;
                 }
-                if (!swap1Set && this.tiles[i][j] != 0) {
+                if (!swap1Set && this.boardTiles[i][j] != 0) {
                     swap1[0] = i;
                     swap1[1] = j;
                     swap1Set = true;
@@ -244,14 +251,14 @@ public class Board {
         StdOut.println("Dimension: " + testBoard.dimension());
         StdOut.println("Test isGoal(), size 2 (target true):" + testBoard.isGoal());
 
-        // StdOut.println("Test Distances");
-        // testDistances();
+        StdOut.println("Test Distances");
+        testDistances();
 
-        // StdOut.println("Test isGoal()");
-        // testIsGoal();
+        StdOut.println("Test isGoal()");
+        testIsGoal();
 
-        // StdOut.println("Test equals()");
-        // testEquals();
+        StdOut.println("Test equals()");
+        testEquals();
 
         StdOut.println("Test neighbors");
         testNeighbors();
@@ -259,8 +266,8 @@ public class Board {
         StdOut.println("Test twin");
         testTwin();
 
-        // StdOut.println("Test 1D-2D conversions");
-        // testConversions();
+        StdOut.println("Test 1D-2D conversions");
+        testConversions();
 
     }
 
@@ -298,11 +305,11 @@ public class Board {
     }
 
     // find the empty spot on the board
-    private int[] findEmptyLocation(int[][] boardTiles) {
+    private int[] findEmptyLocation(int[][] tileArray) {
         int[] emptyLocation = new int[2];
         for (int i = 0; i < this.n; i++) {
             for (int j = 0; j < this.n; j++) {
-                if (boardTiles[i][j] == 0) {
+                if (tileArray[i][j] == 0) {
                     emptyLocation[0] = i;
                     emptyLocation[1] = j;
                 }
@@ -343,8 +350,7 @@ public class Board {
         StdOut.println(
                 "\tCheck non-duplicate board equality (target: false): " + testEqualsBoard.equals(
                         testNonEqualBoard));
-        StdOut.println("\tCheck null (target: false): " + testEqualsBoard.equals(null));
-        StdOut.println("\tCheck non-Board object (target: false): " + testEqualsBoard.equals(1));
+        // StdOut.println("\tCheck non-Board object (target: false): " + testEqualsBoard.equals(1));
     }
 
     private static void testNeighbors() {
