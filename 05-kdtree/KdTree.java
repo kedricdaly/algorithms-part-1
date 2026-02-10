@@ -40,57 +40,6 @@ public class KdTree {
             this.rect = rectToUse;
         }
 
-        private boolean contains(Node n, Point2D p) {
-            if (n.nodePoint.compareTo(p) == 0) return true;
-
-            int cmp = compareNodePoints(n, p);
-            // if (n.splitDim == VERTICAL) {
-            //     cmp = Double.compare(p.x(),
-            //                          n.nodePoint.x()); // leftBottom or rightTop, a vertical split
-            //     if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-            //         cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
-            //     }
-            // }
-            // else if (n.splitDim == HORIZONTAL) {
-            //     cmp = Double.compare(p.y(), n.nodePoint.y()); // above or below, a horizontal split
-            // }
-            // else throw new RuntimeException("Cannot split on unknown dimension");
-
-            boolean res = false;
-            if (cmp < 0) {
-                if (n.leftBottom != null) res = n.contains(n.leftBottom, p);
-
-            }
-            else if (cmp > 0) {
-                if (n.rightTop != null) res = n.contains(n.rightTop, p);
-            }
-            return res;
-        }
-
-        private int compareNodePoints(Node n, Point2D p) {
-            int cmp = 0;
-            if (n.splitDim == VERTICAL) {
-                cmp = Double.compare(p.x(),
-                                     n.nodePoint.x()); // leftBottom or rightTop, a vertical split
-                // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-                //     cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
-                // }
-            }
-            else if (n.splitDim == HORIZONTAL) {
-                cmp = Double.compare(p.y(), n.nodePoint.y()); // above or below, a horizontal split
-                // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-                //     cmp = 1; // go rightTop if same y-coordinate but not same x-coordinate
-                // }
-            }
-            else throw new RuntimeException("Cannot split on unknown dimension");
-
-            if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-                cmp = 1; // go rightTop if same split coordinate but not same other coordinate
-            }
-
-            return cmp;
-        }
-
         private void draw() {
 
             // need to pass in x/y coords so that can transfer previous rectangle.
@@ -210,7 +159,24 @@ public class KdTree {
     public boolean contains(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Cannot search for null point");
         if (this.root == null) return false; // cannot have a point in an empty tree
-        return root.contains(root, p);
+        return contains(this.root, p);
+    }
+
+    // recursive helper function for contains
+    private boolean contains(Node n, Point2D p) {
+        if (n.nodePoint.compareTo(p) == 0) return true;
+
+        int cmp = compareNodePoints(n, p);
+
+        boolean res = false;
+        if (cmp < 0) {
+            if (n.leftBottom != null) res = contains(n.leftBottom, p);
+
+        }
+        else if (cmp > 0) {
+            if (n.rightTop != null) res = contains(n.rightTop, p);
+        }
+        return res;
     }
 
 
