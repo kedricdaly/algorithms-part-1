@@ -72,15 +72,22 @@ public class KdTree {
             if (n.splitDim == VERTICAL) {
                 cmp = Double.compare(p.x(),
                                      n.nodePoint.x()); // leftBottom or rightTop, a vertical split
-                if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-                    cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
-                }
+                // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
+                //     cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
+                // }
             }
             else if (n.splitDim == HORIZONTAL) {
-                cmp = Double.compare(p.y(),
-                                     n.nodePoint.y()); // above or below, a horizontal split
+                cmp = Double.compare(p.y(), n.nodePoint.y()); // above or below, a horizontal split
+                // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
+                //     cmp = 1; // go rightTop if same y-coordinate but not same x-coordinate
+                // }
             }
             else throw new RuntimeException("Cannot split on unknown dimension");
+
+            if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
+                cmp = 1; // go rightTop if same split coordinate but not same other coordinate
+            }
+
             return cmp;
         }
 
