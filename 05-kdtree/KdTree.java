@@ -76,20 +76,6 @@ public class KdTree {
         }
 
         int cmp = compareNodePoints(n, p);
-        // int cmp = 0;
-        // dimToUse = dimToUse % NUM_DIMS; // loop back around if we go through all k-dimensions
-        // if (dimToUse == VERTICAL) {
-        //     cmp = Double.compare(p.x(),
-        //                          n.nodePoint.x()); // leftBottom or rightTop, a vertical split
-        //     if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-        //         cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
-        //     }
-        // }
-        // else if (dimToUse == HORIZONTAL) {
-        //     cmp = Double.compare(p.y(), n.nodePoint.y()); // above or below, a horizontal split
-        // }
-        // else throw new RuntimeException("Cannot split on unknown dimension");
-
 
         // replace one point in child node's rectangle using parent node's point information
         RectHV rectToUse = null;
@@ -149,7 +135,6 @@ public class KdTree {
         return res;
     }
 
-
     // draw all points to standard draw
     // use recursive helper method
     public void draw() {
@@ -191,14 +176,7 @@ public class KdTree {
         // search BOTH children of a node
         // prune the children of a node only if a node's rectangle does not intersect the
         // query rectangle (in this case, the param "rect"
-        range(rect, root, insidePoints); // mutates stack
-
-        // for (Point2D p : points) {
-        //     if (rect.contains(p)) {
-        //         insidePoints.enqueue(p);
-        //     }
-        // }
-
+        range(rect, this.root, insidePoints); // mutates stack
         return insidePoints;
     }
 
@@ -215,12 +193,10 @@ public class KdTree {
         if (!rect.intersects(n.rect)) return;
 
         if (rect.contains(n.nodePoint)) {
-            insidePoints.push(n.nodePoint);
+            insidePoints.push(n.nodePoint); // mutate stack
         }
         range(rect, n.leftBottom, insidePoints);
         range(rect, n.rightTop, insidePoints);
-
-
     }
 
 
@@ -232,17 +208,7 @@ public class KdTree {
 
         if (this.isEmpty()) return null;
 
-        // double minDist = Double.POSITIVE_INFINITY;
-        // Point2D minPoint = new Point2D(XMAX, YMAX);
-
         Point2D minPoint = nearest(root, p, null); // will update minPoint as needed
-        // for (Point2D that : points) {
-        //     double thisDist = p.distanceTo(that);
-        //     if (thisDist < minDist) {
-        //         minDist = thisDist;
-        //         minPoint = new Point2D(that.x(), that.y());
-        //     }
-        // }
         return minPoint;
     }
 
@@ -253,7 +219,6 @@ public class KdTree {
     // 4. Prune search if there is no rectangle intersection
     private Point2D nearest(Node n, Point2D p, Point2D minPoint) {
         if (n == null) return minPoint; // base case
-        // if (!n.rect.contains(p)) return minPoint; // prune search
 
         double minDist;
         if (minPoint != null) minDist = p.distanceSquaredTo(minPoint);
@@ -287,15 +252,9 @@ public class KdTree {
         if (n.splitDim == VERTICAL) {
             cmp = Double.compare(p.x(),
                                  n.nodePoint.x()); // leftBottom or rightTop, a vertical split
-            // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-            //     cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
-            // }
         }
         else if (n.splitDim == HORIZONTAL) {
             cmp = Double.compare(p.y(), n.nodePoint.y()); // above or below, a horizontal split
-            // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-            //     cmp = 1; // go rightTop if same y-coordinate but not same x-coordinate
-            // }
         }
         else throw new RuntimeException("Cannot split on unknown dimension");
 
