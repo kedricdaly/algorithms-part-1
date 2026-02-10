@@ -39,37 +39,7 @@ public class KdTree {
             this.rightTop = null;
             this.rect = rectToUse;
         }
-
-        private void draw() {
-
-            // need to pass in x/y coords so that can transfer previous rectangle.
-            // a given node's rectangle does not cover the entire width or height
-            if (this.leftBottom != null) this.leftBottom.draw();
-            if (this.rightTop != null) this.rightTop.draw();
-
-            // base case
-
-            StdDraw.setPenRadius();
-            if (splitDim == VERTICAL) { // vertical split
-                StdDraw.setPenColor(StdDraw.RED);
-                StdDraw.line(this.nodePoint.x(), this.rect.ymin(), this.nodePoint.x(),
-                             this.rect.ymax());
-            }
-            else if (splitDim == HORIZONTAL) { // horizontal split
-                StdDraw.setPenColor(StdDraw.BLUE);
-                StdDraw.line(this.rect.xmin(), this.nodePoint.y(), this.rect.xmax(),
-                             this.nodePoint.y());
-            }
-            else throw new RuntimeException("Unknown split dimension");
-
-            StdDraw.setPenColor(StdDraw.BLACK);
-            StdDraw.setPenRadius(0.01);
-            StdDraw.point(this.nodePoint.x(), this.nodePoint.y());
-
-        }
-
     }
-
 
     // construct an empty set of points
     public KdTree() {
@@ -183,9 +153,33 @@ public class KdTree {
     // draw all points to standard draw
     // use recursive helper method
     public void draw() {
-        root.draw();
+        draw(this.root);
     }
 
+    private void draw(Node n) {
+        // need to pass in x/y coords so that can transfer previous rectangle.
+        // a given node's rectangle does not cover the entire width or height
+        if (n.leftBottom != null) draw(n.leftBottom);
+        if (n.rightTop != null) draw(n.rightTop);
+
+        // base case
+        StdDraw.setPenRadius();
+        if (n.splitDim == VERTICAL) { // vertical split
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.line(n.nodePoint.x(), n.rect.ymin(), n.nodePoint.x(),
+                         n.rect.ymax());
+        }
+        else if (n.splitDim == HORIZONTAL) { // horizontal split
+            StdDraw.setPenColor(StdDraw.BLUE);
+            StdDraw.line(n.rect.xmin(), n.nodePoint.y(), n.rect.xmax(),
+                         n.nodePoint.y());
+        }
+        else throw new RuntimeException("Unknown split dimension");
+
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(0.01);
+        StdDraw.point(n.nodePoint.x(), n.nodePoint.y());
+    }
 
     // all points that are inside the rectangle (or on the boundary)
     // sweep line algo?
