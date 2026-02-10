@@ -8,9 +8,9 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.StdRandom;
 
 public class KdTree {
 
@@ -94,12 +94,12 @@ public class KdTree {
             // base case
 
             StdDraw.setPenRadius();
-            if (splitDim % NUM_DIMS == VERTICAL) { // vertical split
+            if (splitDim == VERTICAL) { // vertical split
                 StdDraw.setPenColor(StdDraw.RED);
                 StdDraw.line(this.nodePoint.x(), this.rect.ymin(), this.nodePoint.x(),
                              this.rect.ymax());
             }
-            else if (splitDim % NUM_DIMS == HORIZONTAL) { // horizontal split
+            else if (splitDim == HORIZONTAL) { // horizontal split
                 StdDraw.setPenColor(StdDraw.BLUE);
                 StdDraw.line(this.rect.xmin(), this.nodePoint.y(), this.rect.xmax(),
                              this.nodePoint.y());
@@ -202,6 +202,7 @@ public class KdTree {
     // this is the main search algo
     public boolean contains(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Cannot search for null point");
+        if (this.root == null) return false; // cannot have a point in an empty tree
         return root.contains(root, p);
     }
 
@@ -218,7 +219,12 @@ public class KdTree {
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException("Cannot search null rectangle");
 
-        Queue<Point2D> insidePoints = new Queue<Point2D>();
+        Stack<Point2D> insidePoints = new Stack<Point2D>();
+
+        // search BOTH children of a node
+        // prune the children of a node only if a node's rectangle does not intersect the
+        // query rectangle (in this case, the param "rect"
+        range(rect, root, insidePoints); // mutates stack
 
         // for (Point2D p : points) {
         //     if (rect.contains(p)) {
@@ -229,17 +235,40 @@ public class KdTree {
         return insidePoints;
     }
 
+    private void range(RectHV rect, Node n, Stack<Point2D> insidePoints) {
+        // 1. Check rectangle overlap
+        // 2. If rectangle overlap, check if point is in range
+        // 3. Search BOTH children of node
+        // 4. If there is no overlap, prune search (do nothing) and do not search children of node
+
+        if (this.isEmpty()) return;
+
+        if (n == null) return; // base case
+
+        if (!rect.intersects(n.rect)) return;
+
+        if (rect.contains(n.nodePoint)) {
+            insidePoints.push(n.nodePoint);
+        }
+        range(rect, n.leftBottom, insidePoints);
+        range(rect, n.rightTop, insidePoints);
+
+
+    }
+
 
     // a nearest neighbor in the set to point p; null if the set is empty
     // use k-d tree bisection algo
     public Point2D nearest(Point2D p) {
-        if (p == null) throw new IllegalArgumentException("Cannot find NN for null point");
+        if (p == null)
+            throw new IllegalArgumentException("Cannot find Nearest Neighbor for null point");
 
-        if (this.nNodes == 0) return null;
+        if (this.isEmpty()) return null;
 
-        double minDist = Double.POSITIVE_INFINITY;
-        Point2D minPoint = new Point2D(1, 1);
+        // double minDist = Double.POSITIVE_INFINITY;
+        // Point2D minPoint = new Point2D(XMAX, YMAX);
 
+        Point2D minPoint = nearest(root, p, null); // will update minPoint as needed
         // for (Point2D that : points) {
         //     double thisDist = p.distanceTo(that);
         //     if (thisDist < minDist) {
@@ -250,19 +279,63 @@ public class KdTree {
         return minPoint;
     }
 
+    // helper function for recursive nearest neighbor search
+    // 1. check rectangle intersection
+    // 2. If intersection, check nodePoint vs minPoint and update if needed
+    // 3. Search BOTH children nodes of a compared node, using insertion order
+    // 4. Prune search if there is no rectangle intersection
+    private Point2D nearest(Node n, Point2D p, Point2D minPoint) {
+        if (n == null) return minPoint; // base case
+        // if (!n.rect.contains(p)) return minPoint; // prune search
+
+        double minDist;
+        if (minPoint != null) minDist = p.distanceSquaredTo(minPoint);
+        else minDist = Double.POSITIVE_INFINITY;
+
+        if (n.rect.distanceSquaredTo(p) > minDist) return minPoint; // prune search
+
+        // check distances
+        double nodeDist = p.distanceSquaredTo(n.nodePoint);
+
+        if (nodeDist < minDist) minPoint = n.nodePoint;
+
+        int cmp = compareNodePoints(n, p);
+
+        if (cmp == 0)
+            return n.nodePoint; // implies there is a nodePoint EXACTLY at point p so it must be the min point
+        else if (cmp < 0) {
+            minPoint = nearest(n.leftBottom, p, minPoint);
+            minPoint = nearest(n.rightTop, p, minPoint);
+        }
+        else { // if (cmp > 0)
+            minPoint = nearest(n.rightTop, p, minPoint);
+            minPoint = nearest(n.leftBottom, p, minPoint);
+        }
+
+        return minPoint;
+    }
+
     private int compareNodePoints(Node n, Point2D p) {
         int cmp = 0;
         if (n.splitDim == VERTICAL) {
             cmp = Double.compare(p.x(),
                                  n.nodePoint.x()); // leftBottom or rightTop, a vertical split
-            if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
-                cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
-            }
+            // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
+            //     cmp = 1; // go rightTop if same x-coordinate, but not same y-coordinate
+            // }
         }
         else if (n.splitDim == HORIZONTAL) {
             cmp = Double.compare(p.y(), n.nodePoint.y()); // above or below, a horizontal split
+            // if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
+            //     cmp = 1; // go rightTop if same y-coordinate but not same x-coordinate
+            // }
         }
         else throw new RuntimeException("Cannot split on unknown dimension");
+
+        if (cmp == 0 && p.compareTo(n.nodePoint) != 0) {
+            cmp = 1; // go rightTop if same split coordinate but not same other coordinate
+        }
+
         return cmp;
     }
 
