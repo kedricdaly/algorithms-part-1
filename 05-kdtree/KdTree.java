@@ -6,11 +6,9 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Point2D;
-import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
-import edu.princeton.cs.algs4.StdOut;
 
 public class KdTree {
 
@@ -32,12 +30,12 @@ public class KdTree {
         private Node leftBottom;    // pointer to leftBottom child
         private Node rightTop;      // pointer to rightTop child
 
-        public Node(Point2D p, int dimToUse, RectHV rectToUse) {
+        public Node(Point2D p, int dimToUse, double[] rectDims) {
             this.nodePoint = p;
             this.splitDim = dimToUse % NUM_DIMS;
             this.leftBottom = null;
             this.rightTop = null;
-            this.rect = rectToUse;
+            this.rect = new RectHV(rectDims[0], rectDims[1], rectDims[2], rectDims[3]);
         }
     }
 
@@ -61,16 +59,16 @@ public class KdTree {
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Cannot insert null point");
 
-        root = insert(root, p, VERTICAL, new RectHV(XMIN, YMIN, XMAX, YMAX));
+        root = insert(root, p, VERTICAL, new double[] { XMIN, YMIN, XMAX, YMAX });
     }
 
     // private, recursive helper method to insert new node in kdtree
     // currently only 2 dimensions, but could work for higher dimensions
     // alternate inserting the node based on the level we are at by comparing
     // the x- or y-coordinate, as applicable
-    private Node insert(Node n, Point2D p, int dimToUse, RectHV thisRect) {
+    private Node insert(Node n, Point2D p, int dimToUse, double[] rectDims) {
         if (n == null) {
-            n = new Node(p, dimToUse, thisRect); // insert the node
+            n = new Node(p, dimToUse, rectDims); // insert the node
             this.nNodes++;
             return n;
         }
@@ -78,33 +76,41 @@ public class KdTree {
         int cmp = compareNodePoints(n, p);
 
         // replace one point in child node's rectangle using parent node's point information
-        RectHV rectToUse = null;
+        // double[] newRectDims = new double[4];
         int nextNodeDim = (n.splitDim + 1)
                 % NUM_DIMS; // loop back around if we go through all k-dimensions
         if (cmp < 0) {
 
             if (dimToUse == VERTICAL) {
-                rectToUse = new RectHV(n.rect.xmin(), n.rect.ymin(), n.nodePoint.x(),
-                                       n.rect.ymax());
+                // rectDims[0] = n.rect.xmin();
+                // rectDims[1] = n.rect.ymin();
+                rectDims[2] = n.nodePoint.x(); // update xmax of rectangle
+                // rectDims[3] = n.rect.ymax();
             }
             else if (dimToUse == HORIZONTAL) {
-                rectToUse = new RectHV(n.rect.xmin(), n.rect.ymin(), n.rect.xmax(),
-                                       n.nodePoint.y());
+                // rectDims[0] = n.rect.xmin();
+                // rectDims[1] = n.rect.ymin();
+                // rectDims[2] = n.rect.xmax();
+                rectDims[3] = n.nodePoint.y(); // update ymax of rectangle
             }
             else throw new RuntimeException("Unknown dimension on insert");
-            n.leftBottom = insert(n.leftBottom, p, nextNodeDim, rectToUse);
+            n.leftBottom = insert(n.leftBottom, p, nextNodeDim, rectDims);
         }
         else if (cmp > 0) {
             if (dimToUse == VERTICAL) {
-                rectToUse = new RectHV(n.nodePoint.x(), n.rect.ymin(), n.rect.xmax(),
-                                       n.rect.ymax());
+                rectDims[0] = n.nodePoint.x(); // update xmin of rectangle
+                // rectDims[1] = n.rect.ymin();
+                // rectDims[2] = n.rect.xmax();
+                // rectDims[3] = n.rect.ymax();
             }
             else if (dimToUse == HORIZONTAL) {
-                rectToUse = new RectHV(n.rect.xmin(), n.nodePoint.y(), n.rect.xmax(),
-                                       n.rect.ymax());
+                // rectDims[0] = n.rect.xmin();
+                rectDims[1] = n.nodePoint.y(); // update ymin of rectangle
+                // rectDims[2] = n.rect.xmax();
+                // rectDims[3] = n.rect.ymax();
             }
             else throw new RuntimeException("Unknown dimension on insert");
-            n.rightTop = insert(n.rightTop, p, nextNodeDim, rectToUse);
+            n.rightTop = insert(n.rightTop, p, nextNodeDim, rectDims);
         }
         // else n.nodePoint = p; // points must be equal
         return n;
@@ -266,27 +272,7 @@ public class KdTree {
     }
 
     public static void main(String[] args) {
-        testKdTree();
-    }
 
-    private static void testKdTree() {
-        KdTree kdtree = new KdTree();
-        int n = 10;
-        Point2D testPoint = new Point2D(-1, -1);
-        for (int i = 0; i < n; i++) {
-            double x = StdRandom.uniformDouble(0.0, 1.0);
-            double y = StdRandom.uniformDouble(0.0, 1.0);
-            kdtree.insert(new Point2D(x, y));
-            if (i == n - 1) {
-                testPoint = new Point2D(x, y);
-            }
-            StdOut.printf("%8.6f %8.6f\n", x, y);
-        }
-
-        StdOut.println(
-                "Does kdTree contain Point" + testPoint + "?(True): " + kdtree.contains(testPoint));
-        StdOut.println("Does kdTree contain Point (2, 2)?(False): " + kdtree.contains(
-                new Point2D(2, 2)));
     }
 
 
